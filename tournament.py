@@ -7,32 +7,31 @@ import psycopg2
 
 
 def connect():
-    """Connect to the PostgreSQL database.  Returns a database connection."""
-    return psycopg2.connect("dbname=tournament")
+    """Connect to the PostgreSQL database.  Returns a database connection, a cursor."""
+    db = psycopg2.connect("dbname=tournament")
+    cursor = db.cursor()
+    return db, cursor
 
 
 def deleteMatches():
     """Remove all the match records from the database."""
-    conn = connect()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM matches")
+    conn, cursor = connect()
+    cursor.execute("TRUNCATE matches")
     conn.commit()
     conn.close()
 
 
 def deletePlayers():
     """Remove all the player records from the database."""
-    conn = connect()
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM players")
+    conn, cursor = connect()
+    cursor.execute("TRUNCATE players CASCADE")
     conn.commit()
     conn.close()
 
 
 def countPlayers():
     """Returns the number of players currently registered."""
-    conn = connect()
-    cursor = conn.cursor()
+    conn, cursor = connect()
     cursor.execute("SELECT count(*) AS num FROM players")
     count = cursor.fetchone()
     print(count)
@@ -49,9 +48,10 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
-    conn = connect()
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO players (name) VALUES (%s) ", [name])
+    conn, cursor = connect()
+    query = "INSERT INTO players (name) VALUES (%s) "
+    param = [name]
+    cursor.execute(query, param)
     conn.commit()
     conn.close()
 
@@ -69,8 +69,7 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
-    conn = connect()
-    cursor = conn.cursor()
+    conn, cursor = connect()
     cursor.execute("SELECT players.id, players.name, games_won.wins, games_played.matches FROM players, games_won, games_played WHERE players.id = games_won.id and players.id = games_played.id ORDER BY games_won.wins desc")
     rows = cursor.fetchall()
     standings = [(row[0], row[1], row[2], row[3]) for row in rows]
@@ -86,9 +85,10 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
-    conn = connect()
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO matches (winner, loser) VALUES (%s, %s)", (winner, loser))
+    conn, cursor = connect()
+    query = "INSERT INTO matches (winner, loser) VALUES (%s, %s)"
+    param = (winner, loser)
+    cursor.execute(query, param)
     conn.commit()
     conn.close()
  
@@ -109,31 +109,35 @@ def swissPairings():
         name2: the second player's name
     """
     standings = playerStandings()
-    conn = connect()
-    cursor = conn.cursor()
+    conn, cursor = connect()
     cursor.execute("SELECT * FROM matches")
     matches = cursor.fetchall()
     conn.close()
     pairings = []
     hasPlayed = False
     matched = []
+    #algorithm to prevent repeat matches
+    #loop through every player in standings except the last
     for i in range(len(standings)-1):
+        #check if index i has already been match if so skip to the next cycle
         if i in matched:
             continue
+        #loop through all players in standing after i's index
         for k in range(i+1, len(standings)):
+            #check if index k has already been match if so skip to the next cycle
             if k in matched:
                 continue
+            #reset boolean for checking if two players have already played    
             hasPlayed = False
+            #Check previous matches for cases when players at i and k have played before
             for j in matches:
                 if (standings[i][0] == j[0] and standings[k][0] == j[1]) or (standings[i][0] == j[1] and standings[k][0] == j[0]):
                     hasPlayed = True
+            #if the have not played, pair them and add index i and k to the list for skipping
             if not hasPlayed:
                 pair = (standings[i][0], standings[i][1], standings[k][0], standings[k][1])
                 pairings.append(pair)
                 matched.append(i)
                 matched.append(k)
                 break
-        print(pairings)
-
-
     return pairings
