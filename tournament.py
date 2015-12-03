@@ -51,7 +51,7 @@ def registerPlayer(name):
     """
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("insert into players values (%s)", (name,))
+    cursor.execute("insert into players (name) values (%s) ", [name])
     conn.commit()
     conn.close()
 
