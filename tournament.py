@@ -71,10 +71,11 @@ def playerStandings():
     """
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("SELECT players.id, players.name, count(matches.winner) AS wins, count(matches.player1) AS matches FROM players, matches WHERE matches.winner = players.id and matches.player1 = players.id GROUP BY players.id ORDER BY wins desc")
+    cursor.execute("SELECT players.id, players.name, games_won.wins, games_played.matches FROM players, games_won, games_played WHERE players.id = games_won.id and players.id = games_played.id ORDER BY games_won.wins desc")
     rows = cursor.fetchall()
     standings = [(row[0], row[1], row[2], row[3]) for row in rows]
     conn.close()
+    print(standings)
     return standings
 
 
