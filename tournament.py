@@ -15,7 +15,7 @@ def deleteMatches():
     """Remove all the match records from the database."""
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("delete from matches")
+    cursor.execute("DELETE FROM matches")
     conn.commit()
     conn.close()
 
@@ -24,7 +24,7 @@ def deletePlayers():
     """Remove all the player records from the database."""
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("delete from players")
+    cursor.execute("DELETE FROM players")
     conn.commit()
     conn.close()
 
@@ -33,7 +33,7 @@ def countPlayers():
     """Returns the number of players currently registered."""
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("SELECT count(*) as num FROM players")
+    cursor.execute("SELECT count(*) AS num FROM players")
     count = cursor.fetchone()
     print(count)
     conn.close()
@@ -51,7 +51,7 @@ def registerPlayer(name):
     """
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("insert into players (name) values (%s) ", [name])
+    cursor.execute("INSERT INTO players (name) VALUES (%s) ", [name])
     conn.commit()
     conn.close()
 
@@ -108,5 +108,14 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
+    standings = playerStandings()
+    pairings = []
+
+    for i in range(0, len(standings), 2):
+        pair = (standings[i][0], standings[i][1], standings[i+1][0], standings[i+1][1])
+        pairings.append(pair)
+
+
+    return pairings
 
 
