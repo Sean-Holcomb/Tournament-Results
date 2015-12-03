@@ -8,8 +8,26 @@
 
 CREATE DATABASE tournament;
 \c tournament;
-CREATE TABLE players (id SERIAL PRIMARY KEY, name TEXT);
 
-CREATE TABLE matches (player1 INTEGER, player2 INTEGER, winner INTEGER);
+CREATE TABLE players (
+	id SERIAL PRIMARY KEY, 
+	name TEXT);
+
+CREATE TABLE matches (
+	player1 INTEGER, 
+	player2 INTEGER, 
+	winner INTEGER);
+
+CREATE VIEW games_played AS
+SELECT players.id, count(matches.*)
+FROM players, matches
+WHERE matches.* = players.id
+GROUP BY players.id
+
+CREATE VIEW games_won AS
+SELECT player.id, count(matches.winner)
+FROM players, matches
+WHERE player.id = matches.winner
+GROUP BY players.id
 
 
