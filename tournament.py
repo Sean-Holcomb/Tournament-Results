@@ -109,13 +109,31 @@ def swissPairings():
         name2: the second player's name
     """
     standings = playerStandings()
+    conn = connect()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM matches")
+    matches = cursor.fetchall()
+    conn.close()
     pairings = []
-
-    for i in range(0, len(standings), 2):
-        pair = (standings[i][0], standings[i][1], standings[i+1][0], standings[i+1][1])
-        pairings.append(pair)
+    hasPlayed = False
+    matched = []
+    for i in range(len(standings)-1):
+        if i in matched:
+            continue
+        for k in range(i+1, len(standings)):
+            if k in matched:
+                continue
+            hasPlayed = False
+            for j in matches:
+                if (standings[i][0] == j[0] and standings[k][0] == j[1]) or (standings[i][0] == j[1] and standings[k][0] == j[0]):
+                    hasPlayed = True
+            if not hasPlayed:
+                pair = (standings[i][0], standings[i][1], standings[k][0], standings[k][1])
+                pairings.append(pair)
+                matched.append(i)
+                matched.append(k)
+                break
+        print(pairings)
 
 
     return pairings
-
-
