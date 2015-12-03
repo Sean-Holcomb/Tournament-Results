@@ -5,18 +5,18 @@
 from tournament import *
 
 def testDeleteMatches():
-    #deleteMatches()
+    deleteMatches()
     print "1. Old matches can be deleted."
 
 
 def testDelete():
-    #deleteMatches()
+    deleteMatches()
     deletePlayers()
     print "2. Player records can be deleted."
 
 
 def testCount():
-    #deleteMatches()
+    deleteMatches()
     deletePlayers()
     c = countPlayers()
     if c == '0':
