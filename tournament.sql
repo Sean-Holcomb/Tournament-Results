@@ -14,20 +14,22 @@ CREATE TABLE players (
 	name TEXT);
 
 CREATE TABLE matches (
-	player1 INTEGER REFERENCES players.id, 
-	player2 INTEGER REFERENCES players.id, 
-	winner INTEGER REFERENCES players.id);
+	winner INTEGER REFERENCES players (id),
+	loser INTEGER REFERENCES players (id),
+	PRIMARY KEY (winner, loser)
+);
 
 CREATE VIEW games_played AS
 SELECT players.id, count(matches.*) as matches
-FROM players, matches
-WHERE matches.* = players.id
+FROM players LEFT JOIN matches
+ON matches.winner = players.id OR matches.loser = players.id
 GROUP BY players.id;
 
 CREATE VIEW games_won AS
-SELECT player.id, count(matches.winner) as wins
-FROM players, matches
-WHERE player.id = matches.winner
-GROUP BY players.id;
+SELECT players.id, count(matches.winner) as wins
+FROM players LEFT JOIN matches
+ON players.id = matches.winner
+GROUP BY players.id
+ORDER BY wins DESC;
 
 
