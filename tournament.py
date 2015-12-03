@@ -88,7 +88,7 @@ def reportMatch(winner, loser):
     """
     conn = connect()
     cursor = conn.cursor()
-    cursor.execute("delete table matches")
+    cursor.execute("INSERT INTO matches (winner, loser) VALUES (%s, %s)", (winner, loser))
     conn.commit()
     conn.close()
  
