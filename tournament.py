@@ -71,8 +71,11 @@ def playerStandings():
     """
     conn = connect()
     cursor = conn.cursor()
-    cursor.query("for id, name, wins, matches in players order by wins desc")
+    cursor.execute("SELECT players.id, players.name, count(matches.winner) AS wins, count(matches.player1) AS matches FROM players, matches WHERE matches.winner = players.id and matches.player1 = players.id GROUP BY players.id ORDER BY wins desc")
+    rows = cursor.fetchall()
+    standings = [(row[0], row[1], row[2], row[3]) for row in rows]
     conn.close()
+    return standings
 
 
 def reportMatch(winner, loser):
